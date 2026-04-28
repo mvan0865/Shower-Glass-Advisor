@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shower Glass Advisor — BZ Build Co.</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F7F4EF;
+    --dark: #1C1917;
+    --mid: #44403C;
+    --muted: #A8A29E;
+    --border: #E7E3DC;
+    --accent: #2563A8;
+    --accent-light: #EBF2FB;
+    --success: #166534;
+    --success-light: #DCFCE7;
+    --warn: #92400E;
+    --warn-light: #FEF3C7;
+    --card-bg: #FFFFFF;
+    --selected-border: #2563A8;
+    --selected-bg: #EBF2FB;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--dark);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: var(--dark);
+    color: white;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-brand { font-family: 'DM Serif Display', serif; font-size: 18px; letter-spacing: 0.01em; }
+  .header-sub { font-size: 12px; color: #A8A29E; margin-top: 2px; font-weight: 300; }
+
+  /* Progress bar */
+  .progress-bar {
+    background: var(--border);
+    height: 3px;
+    width: 100%;
+  }
+  .progress-fill {
+    background: var(--accent);
+    height: 3px;
+    transition: width 0.4s ease;
+  }
+
+  /* Main layout */
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* Step header */
+  .step-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .step-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    line-height: 1.2;
+    color: var(--dark);
+    margin-bottom: 8px;
+  }
+  .step-desc {
+    font-size: 14px;
+    color: var(--mid);
+    line-height: 1.6;
+    margin-bottom: 32px;
+    font-weight: 300;
+    max-width: 560px;
+  }
+
+  /* Option cards */
+  .options-grid {
+    display: grid;
+    gap: 12px;
+  }
+  .options-grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .options-grid.cols-3 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .options-grid.cols-4 { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+
+  .option-card {
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+  }
+  .option-card:hover {
+    border-color: #93C5FD;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(37,99,168,0.08);
+  }
+  .option-card.selected {
+    border-color: var(--selected-border);
+    background: var(--selected-bg);
+    box-shadow: 0 0 0 3px rgba(37,99,168,0.12);
+  }
+  .option-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 22px;
+    height: 22px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+  }
+  .option-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark);
+    margin-bottom: 4px;
+  }
+  .option-desc {
+    font-size: 12px;
+    color: var(--mid);
+    line-height: 1.55;
+    font-weight: 300;
+  }
+  .option-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    letter-spacing: 0.03em;
+  }
+  .badge-blue { background: var(--accent-light); color: var(--accent); }
+  .badge-green { background: var(--success-light); color: var(--success); }
+  .badge-amber { background: var(--warn-light); color: var(--warn); }
+
+  .option-specs {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .option-spec-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    padding: 3px 0;
+    color: var(--mid);
+  }
+  .option-spec-row span:last-child { font-weight: 500; color: var(--dark); }
+
+  .tip {
+    background: #F0F4FF;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--mid);
+    line-height: 1.6;
+    margin-top: 16px;
+  }
+
+  /* Navigation */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+  }
+  .btn-back {
+    background: transparent;
+    color: var(--muted);
+    border: 1.5px solid var(--border);
+  }
+  .btn-back:hover { color: var(--dark); border-color: var(--mid); }
+  .btn-next {
+    background: var(--dark);
+    color: white;
+  }
+  .btn-next:hover { background: #2C2822; }
+  .btn-next:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    font-size: 14px;
+    padding: 12px 32px;
+  }
+  .btn-primary:hover { background: #1D4F8C; }
+
+  .step-counter {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* Summary page */
+  .summary-header {
+    text-align: center;
+    padding: 40px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+  .summary-check {
+    width: 56px;
+    height: 56px;
+    background: var(--success-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin: 0 auto 16px;
+  }
+  .summary-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+  .summary-sub {
+    font-size: 14px;
+    color: var(--mid);
+    font-weight: 300;
+  }
+  .summary-section { margin-bottom: 24px; }
+  .summary-section-title {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .summary-item {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .summary-item-label { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+  .summary-item-value { font-size: 14px; font-weight: 500; color: var(--dark); }
+  .summary-item-note { font-size: 11px; color: var(--mid); margin-top: 2px; font-weight: 300; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+
+  .contact-box {
+    background: var(--dark);
+    color: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 32px;
+    text-align: center;
+  }
+  .contact-box h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  .contact-box p {
+    font-size: 13px;
+    color: #A8A29E;
+    font-weight: 300;
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .contact-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-outline-white {
+    background: transparent;
+    color: white;
+    border: 1.5px solid rgba(255,255,255,0.3);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-outline-white:hover { border-color: white; background: rgba(255,255,255,0.05); }
+
+  /* Print styles */
+  @media print {
+    .header { background: #1C1917 !important; -webkit-print-color-adjust: exact; }
+    .btn, .contact-actions, .nav { display: none !important; }
+    .contact-box { background: #1C1917 !important; -webkit-print-color-adjust: exact; }
+  }
+
+  /* Animations */
+  .step-content { animation: fadeUp 0.25s ease; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-brand">BZ Build Co.</div>
+    <div class="header-sub">Shower Glass Advisor</div>
+  </div>
+  <div style="font-size:12px;color:#A8A29E;font-weight:300;">bzbuildc.com</div>
+</div>
+
+<div class="progress-bar">
+  <div class="progress-fill" id="progressFill" style="width:11%"></div>
+</div>
+
+<div class="container" id="appContainer"></div>
+
+<script>
+const STEPS = [
+  {
+    id: 'enclosure',
+    label: 'Step 1 of 9',
+    title: 'Enclosure type',
+    desc: 'How would you like your shower enclosed? This is the biggest decision — it affects cost, look, and how the door works.',
+    cols: 'cols-2',
+    multi: false,
+    options: [
+      { id: 'frameless', title: 'Frameless', badge: 'Most popular', badgeType: 'blue', desc: 'No metal frame around the glass. Clean, modern look. Heavier glass required (3/8"–1/2"). Premium pricing.' },
+      { id: 'semi', title: 'Semi-frameless', desc: 'Frame on fixed side panels only, door itself is frameless. Good middle-ground for look and cost.' },
+      { id: 'framed', title: 'Framed', desc: 'Full aluminum frame surrounds all glass. Most affordable. Can feel traditional but very durable.' },
+      { id: 'walkin', title: 'Walk-in / open', desc: 'Fixed glass panel only — no door. Minimalist look. Works best with larger shower footprints (36"+ wide).' },
+    ]
+  },
+  {
+    id: 'swing',
+    label: 'Step 2 of 9',
+    title: 'Door swing direction',
+    desc: 'Which way should your shower door open? This depends on your bathroom layout and available floor space.',
+    cols: 'cols-3',
+    multi: false,
+    skipIf: (sel) => sel.enclosure === 'walkin',
+    options: [
+      { id: 'outswing', title: 'Outswing (recommended)', badge: 'Most common', badgeType: 'blue', desc: 'Door opens into the bathroom. Easier to exit, no water pooling at base. Needs ~24" clear floor space in front.' },
+      { id: 'inswing', title: 'Inswing', desc: 'Door opens into the shower. Good for tight bathrooms outside. Shower interior must be large enough for safe clearance.' },
+      { id: 'reversible', title: 'Let installer decide', badge: 'Flexible', badgeType: 'green', desc: 'Most quality frameless doors are reversible — left or right hand, in or out. Confirm with fabricator.' },
+    ],
+    tip: 'Standard door opening width: 22"–36". ADA minimum: 32" clear. Hinge side is set in the field — confirm before glass is cut.'
+  },
+  {
+    id: 'hinge_side',
+    label: 'Step 3 of 9',
+    title: 'Door hinge side',
+    desc: 'Which side should the door hinge from? Think about where your showerhead is and which direction feels most natural to enter.',
+    cols: 'cols-2',
+    multi: false,
+    skipIf: (sel) => sel.enclosure === 'walkin',
+    options: [
+      { id: 'hinge_showerhead', title: 'Hinge closest to showerhead', badge: 'Most common', badgeType: 'blue', desc: 'Door hinges on the showerhead wall side. You enter away from the spray — feels most natural in most layouts.' },
+      { id: 'hinge_away', title: 'Hinge furthest from showerhead', desc: 'Door hinges on the far side from the showerhead. Works better in some corner or niche configurations.' },
+    ],
+    tip: 'Not sure? Think about which direction you naturally step in — you want the door swinging away from you as you enter, not into your path.'
+  },
+  {
+    id: 'glass_type',
+    label: 'Step 3 of 9',
+    title: 'Glass type',
+    desc: 'All shower glass must be tempered by code. The question is whether you want any upgrades to clarity or privacy.',
+    cols: 'cols-3',
+    multi: false,
+    options: [
+      { id: 'tempered', title: 'Standard tempered', badge: 'Required by code', badgeType: 'blue', desc: 'Heat-treated safety glass that shatters into small, safe pieces. Clear glass with a slight green tint when viewed edge-on.' },
+      { id: 'low_iron', title: 'Low-iron (Starphire)', badge: 'Upgrade', badgeType: 'green', desc: 'Ultra-clear with no green tint. Best for white or light tile surrounds. About 20–30% cost premium over standard.' },
+      { id: 'frosted', title: 'Frosted / patterned', desc: 'Acid-etched or sandblasted for privacy. Good for shared bathrooms or showers visible from the bedroom.' },
+    ]
+  },
+  {
+    id: 'thickness',
+    label: 'Step 4 of 9',
+    title: 'Glass thickness',
+    desc: 'Thicker glass feels more solid and requires no frame for support. Your enclosure type may limit your options.',
+    cols: 'cols-3',
+    multi: false,
+    options: [
+      { id: '6mm', title: '1/4" (6mm)', desc: 'For framed enclosures only. Not suitable for frameless — lacks rigidity without a surrounding frame.' },
+      { id: '10mm', title: '3/8" (10mm)', badge: 'Standard frameless', badgeType: 'blue', desc: 'Most common for frameless doors. Good balance of rigidity and cost. Works for most door spans up to 36".' },
+      { id: '12mm', title: '1/2" (12mm)', badge: 'Premium', badgeType: 'amber', desc: 'Heaviest, most solid feel. Best for large panels, pivot doors, or walk-in panels. Requires heavy-duty hardware.' },
+    ]
+  },
+  {
+    id: 'handle',
+    label: 'Step 5 of 9',
+    title: 'Door handle type',
+    desc: 'The handle is the most-touched piece of hardware. Consider both how it looks and how it functions day-to-day.',
+    cols: 'cols-2',
+    multi: false,
+    skipIf: (sel) => sel.enclosure === 'walkin',
+    options: [
+      { id: 'bar', title: 'Bar / ladder handle', badge: 'Most common', badgeType: 'blue', desc: 'Straight bar, 6"–18" long. Mounted vertically near latch edge. Through-glass mount on frameless. Works on all glass 3/8" and up.',
+        specs: [['Placement', '2"–4" from glass edge'], ['Height center', '42"–48" AFF']] },
+      { id: 'knob', title: 'Pull knob or ring', desc: 'Single-point pull. Minimal look. Works best on lighter glass and smaller doors. Common in European-style enclosures.',
+        specs: [['Placement', 'Center of door edge'], ['Height center', '40"–44" AFF']] },
+      { id: 'towel_handle', title: 'Towel bar handle', badge: 'Dual function', badgeType: 'green', desc: 'Full-length bar that doubles as door handle and exterior towel bar. Typically 18"–24". Very practical for master baths.',
+        specs: [['Placement', '2"–3" from latch edge'], ['Height', 'Center at 42"–48" AFF']] },
+      { id: 'notched', title: 'Notched / recessed', desc: 'Glass is cut with a notch — no hardware protrudes. Ultra-minimal. More expensive to fabricate. Best for 1/2" glass only.',
+        specs: [['Placement', 'Cut into glass edge'], ['Height center', '40"–44" AFF']] },
+    ]
+  },
+  {
+    id: 'towel_bar',
+    label: 'Step 6 of 9',
+    title: 'Towel bar',
+    desc: 'Where and how do you want to hang towels near the shower? Select all that apply.',
+    cols: 'cols-3',
+    multi: true,
+    options: [
+      { id: 'single_18', title: '18" single bar', desc: 'Hand towels. Mount 48" AFF. Good for small baths or secondary bars.' },
+      { id: 'single_24', title: '24" single bar', badge: 'Standard', badgeType: 'blue', desc: 'Standard size for one bath towel. Mount 48" AFF, 16"+ from shower opening.' },
+      { id: 'single_30', title: '30" single bar', desc: 'Oversized bath towels or two hand towels. Mount 48" AFF. Needs at least 32" of clear wall.' },
+      { id: 'double', title: 'Double bar', desc: 'Two rails on one mount. Top for display, bottom for daily use. Great for shared baths.' },
+      { id: 'glass_bar', title: 'Glass-mounted bar', badge: 'Special consideration', badgeType: 'amber', desc: 'Through-glass mount on fixed panel. Clean look, no wall patching. Requires 3/8"+ glass. Every hole needs quality sealing.' },
+      { id: 'none_bar', title: 'No towel bar', desc: 'Hooks or heated towel rack used instead, or handled elsewhere in the bathroom.' },
+    ],
+    tip: 'Standard towel bar height: 48" AFF for adults, 36" for accessible / kids. Always anchor into a stud or use proper hollow-wall anchors rated for the load.'
+  },
+  {
+    id: 'robe_hook',
+    label: 'Step 7 of 9',
+    title: 'Robe hook',
+    desc: 'Robe hooks near the shower are one of the most-used items in a bathroom. Select what fits your space.',
+    cols: 'cols-3',
+    multi: true,
+    options: [
+      { id: 'single_hook', title: 'Single robe hook', badge: 'Standard', badgeType: 'blue', desc: 'Mount 65"–70" AFF near shower entry, outside splash zone. Plan one per user.' },
+      { id: 'double_hook', title: 'Double hook', desc: 'Two hooks on one backplate. Great space saver. Same height: 65"–70" AFF. Needs solid backing.' },
+      { id: 'glass_hook', title: 'Glass-mounted hook', desc: 'Clamps or through-mounts to fixed glass panel. Avoids wall patching. Weight limit ~10 lbs. Not for heavy wet robes long-term.' },
+      { id: 'none_hook', title: 'No robe hook', desc: 'Robes stored on door hooks or a towel ladder elsewhere in the bathroom.' },
+    ]
+  },
+  {
+    id: 'coating',
+    label: 'Step 8 of 9',
+    title: 'Glass coating',
+    desc: 'A water-repellent coating is one of the best investments you can make for shower glass maintenance.',
+    cols: 'cols-2',
+    multi: false,
+    options: [
+      { id: 'coating_yes', title: 'Yes — water-repellent coating', badge: 'Highly recommended', badgeType: 'green', desc: 'Diamon-Fusion, EnduroShield, or similar. Water beads off the glass surface. Dramatically reduces hard water buildup and cleaning frequency. Applied at fabrication — roughly $150–300 added cost.' },
+      { id: 'coating_no', title: 'No coating / decide later', desc: 'Standard glass only. Requires more regular cleaning to prevent mineral deposits. Aftermarket DIY coatings are available but less durable than factory-applied.' },
+    ]
+  },
+  {
+    id: 'finish',
+    label: 'Step 9 of 9',
+    title: 'Hardware finish',
+    desc: 'Choose a finish that coordinates with your plumbing fixtures, light fixtures, and other bathroom hardware.',
+    cols: 'cols-4',
+    multi: false,
+    options: [
+      { id: 'chrome', title: 'Chrome', desc: 'Classic, affordable. Shows water spots easily. Easy to source replacement parts.' },
+      { id: 'brushed_nickel', title: 'Brushed nickel', badge: 'Popular', badgeType: 'blue', desc: 'Warm tone, hides water spots well. Matches most plumbing fixtures.' },
+      { id: 'matte_black', title: 'Matte black', badge: 'Trending', badgeType: 'blue', desc: 'Bold, modern look. Shows soap scum. Best with darker tile surrounds.' },
+      { id: 'brushed_gold', title: 'Brushed gold / PVD', desc: 'Warm, luxe look. Very durable PVD finish. Ensure plumbing fixtures match.' },
+    ],
+    tip: 'Match all hardware finish across door hinges, handle, towel bar, robe hook, and toilet paper holder for a cohesive look.'
+  }
+];
+
+const LABELS = {
+  enclosure: { frameless: 'Frameless', semi: 'Semi-frameless', framed: 'Framed', walkin: 'Walk-in / open' },
+  swing: { outswing: 'Outswing', inswing: 'Inswing', reversible: 'Let installer decide' },
+  glass_type: { tempered: 'Standard tempered', low_iron: 'Low-iron (Starphire)', frosted: 'Frosted / patterned' },
+  thickness: { '6mm': '1/4" (6mm)', '10mm': '3/8" (10mm)', '12mm': '1/2" (12mm)' },
+  handle: { bar: 'Bar / ladder handle', knob: 'Pull knob or ring', towel_handle: 'Towel bar handle', notched: 'Notched / recessed' },
+  towel_bar: { single_18: '18" single bar', single_24: '24" single bar', single_30: '30" single bar', double: 'Double bar', glass_bar: 'Glass-mounted bar', none_bar: 'No towel bar' },
+  robe_hook: { single_hook: 'Single robe hook', double_hook: 'Double hook', glass_hook: 'Glass-mounted hook', none_hook: 'No robe hook' },
+  hinge_side: { hinge_showerhead: 'Hinge closest to showerhead', hinge_away: 'Hinge furthest from showerhead' },
+  coating: { coating_yes: 'Yes — water-repellent coating', coating_no: 'No coating' },
+  finish: { chrome: 'Chrome', brushed_nickel: 'Brushed nickel', matte_black: 'Matte black', brushed_gold: 'Brushed gold / PVD' }
+};
+
+let currentStep = 0;
+let selections = {};
+
+function getVisibleSteps() {
+  return STEPS.filter(s => !s.skipIf || !s.skipIf(selections));
+}
+
+function render() {
+  const visible = getVisibleSteps();
+  const total = visible.length;
+  const step = visible[currentStep];
+  const pct = Math.round(((currentStep + 1) / (total + 1)) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  const sel = selections[step.id];
+  const hasSelection = step.multi ? (sel && sel.length > 0) : !!sel;
+
+  const optionsHTML = step.options.map(opt => {
+    const isSelected = step.multi
+      ? (sel && sel.includes(opt.id))
+      : sel === opt.id;
+    const specsHTML = opt.specs ? `<div class="option-specs">${opt.specs.map(([l,v]) => `<div class="option-spec-row"><span>${l}</span><span>${v}</span></div>`).join('')}</div>` : '';
+    const badgeHTML = opt.badge ? `<div><span class="option-badge badge-${opt.badgeType || 'blue'}">${opt.badge}</span></div>` : '';
+    return `<div class="option-card${isSelected ? ' selected' : ''}" onclick="selectOption('${step.id}', '${opt.id}', ${step.multi})">
+      ${badgeHTML}
+      <div class="option-title">${opt.title}</div>
+      <div class="option-desc">${opt.desc}</div>
+      ${specsHTML}
+    </div>`;
+  }).join('');
+
+  const tipHTML = step.tip ? `<div class="tip">${step.tip}</div>` : '';
+  const multiNote = step.multi ? `<p style="font-size:11px;color:var(--muted);margin-bottom:16px;">Select all that apply</p>` : '';
+
+  document.getElementById('appContainer').innerHTML = `
+    <div class="step-content">
+      <div class="step-label">${step.label.replace('of 9', 'of ' + total)}</div>
+      <h1 class="step-title">${step.title}</h1>
+      <p class="step-desc">${step.desc}</p>
+      ${multiNote}
+      <div class="options-grid ${step.cols}">${optionsHTML}</div>
+      ${tipHTML}
+      <div class="nav">
+        <button class="btn btn-back" onclick="goBack()" ${currentStep === 0 ? 'style="visibility:hidden"' : ''}>← Back</button>
+        <span class="step-counter">${currentStep + 1} of ${total}</span>
+        <button class="btn btn-next" onclick="goNext()" ${!hasSelection ? 'disabled' : ''}>${currentStep === total - 1 ? 'See my summary →' : 'Next →'}</button>
+      </div>
+    </div>`;
+}
+
+function selectOption(stepId, optId, multi) {
+  if (multi) {
+    if (!selections[stepId]) selections[stepId] = [];
+    const idx = selections[stepId].indexOf(optId);
+    if (idx >= 0) selections[stepId].splice(idx, 1);
+    else selections[stepId].push(optId);
+  } else {
+    selections[stepId] = optId;
+  }
+  render();
+}
+
+function goNext() {
+  const visible = getVisibleSteps();
+  if (currentStep < visible.length - 1) {
+    currentStep++;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    showSummary();
+  }
+}
+
+function goBack() {
+  if (currentStep > 0) {
+    currentStep--;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function getLabel(key, val) {
+  if (Array.isArray(val)) return val.map(v => LABELS[key]?.[v] || v).join(', ');
+  return LABELS[key]?.[val] || val || '—';
+}
+
+function showSummary() {
+  document.getElementById('progressFill').style.width = '100%';
+  const s = selections;
+
+  const rows = [
+    { section: 'Glass enclosure', items: [
+      { label: 'Enclosure type', value: getLabel('enclosure', s.enclosure) },
+      s.enclosure !== 'walkin' ? { label: 'Door swing', value: getLabel('swing', s.swing) } : null,
+      s.enclosure !== 'walkin' ? { label: 'Hinge side', value: getLabel('hinge_side', s.hinge_side) } : null,
+      { label: 'Glass type', value: getLabel('glass_type', s.glass_type) },
+      { label: 'Glass thickness', value: getLabel('thickness', s.thickness) },
+      { label: 'Water-repellent coating', value: getLabel('coating', s.coating) },
+    ].filter(Boolean)},
+    { section: 'Hardware', items: [
+      s.enclosure !== 'walkin' ? { label: 'Door handle', value: getLabel('handle', s.handle) } : null,
+      { label: 'Towel bar', value: getLabel('towel_bar', s.towel_bar) },
+      { label: 'Robe hook', value: getLabel('robe_hook', s.robe_hook) },
+      { label: 'Hardware finish', value: getLabel('finish', s.finish) },
+    ].filter(Boolean)}
+  ];
+
+  const summaryHTML = rows.map(group => `
+    <div class="summary-section">
+      <div class="summary-section-title">${group.section}</div>
+      <div class="summary-grid">
+        ${group.items.map(item => `
+          <div class="summary-item">
+            <div>
+              <div class="summary-item-label">${item.label}</div>
+              <div class="summary-item-value">${item.value}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('appContainer').innerHTML = `
+    <div class="step-content">
+      <div class="summary-header">
+        <div class="summary-check">✓</div>
+        <h2 class="summary-title">Your shower glass summary</h2>
+        <p class="summary-sub">Here's everything you selected. Share this with BZ Build Co. to get your quote started.</p>
+      </div>
+      ${summaryHTML}
+      <div class="contact-box">
+        <h3>Ready to get your quote?</h3>
+        <p>Share your selections with the BZ Build Co. team and we'll follow up with pricing and availability for your project.</p>
+        <div class="contact-actions">
+          <button class="btn-outline-white" onclick="window.print()">Print / save as PDF</button>
+          <button class="btn btn-primary" onclick="window.location.href='mailto:info@bzbuildco.com?subject=Shower Glass Selections&body='+encodeURIComponent(getSummaryText())">Email to BZ Build Co.</button>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:24px;">
+        <button class="btn btn-back" onclick="startOver()">Start over</button>
+      </div>
+    </div>`;
+}
+
+function getSummaryText() {
+  const s = selections;
+  return [
+    'My shower glass selections:',
+    '',
+    'Enclosure: ' + getLabel('enclosure', s.enclosure),
+    s.enclosure !== 'walkin' ? 'Door swing: ' + getLabel('swing', s.swing) : '',
+    s.enclosure !== 'walkin' ? 'Hinge side: ' + getLabel('hinge_side', s.hinge_side) : '',
+    'Glass type: ' + getLabel('glass_type', s.glass_type),
+    'Thickness: ' + getLabel('thickness', s.thickness),
+    'Coating: ' + getLabel('coating', s.coating),
+    s.enclosure !== 'walkin' ? 'Handle: ' + getLabel('handle', s.handle) : '',
+    'Towel bar: ' + getLabel('towel_bar', s.towel_bar),
+    'Robe hook: ' + getLabel('robe_hook', s.robe_hook),
+    'Hardware finish: ' + getLabel('finish', s.finish),
+  ].filter(Boolean).join('\n');
+}
+
+function startOver() {
+  currentStep = 0;
+  selections = {};
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+render();
+</script>
+</body>
+</html>
